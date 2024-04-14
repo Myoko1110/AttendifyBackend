@@ -9,3 +9,10 @@ class Attendance(models.Model):
 
     def __str__(self):
         return self.user_id
+
+
+class Response(models.Model):
+    id = models.AutoField(primary_key=True)
+    part = models.CharField(max_length=50)
+    date = models.DateField()
+    grade = models.CharField(max_length=50, default="")
