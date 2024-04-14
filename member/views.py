@@ -35,12 +35,7 @@ class MemberView(APIView):
             return HttpResponseBadRequest("Invalid request")
         grade = request.data["grade"]
 
-        if "email" not in request.data:
-            return HttpResponseBadRequest("Invalid request")
-        email = request.data["email"]
-
-        Member.objects.create(last_name=last_name, first_name=first_name, part=part, grade=grade,
-                              email=email)
+        Member.objects.create(last_name=last_name, first_name=first_name, part=part, grade=grade)
 
         return JsonResponse({
             "status": 200,
@@ -58,17 +53,17 @@ class MemberView(APIView):
         if is_valid != "executive":
             return HttpResponseForbidden("Forbidden")
 
-        if "email" in request.query_params:
+        if "id" in request.query_params:
             try:
-                result = Member.objects.get(email=request.query_params["email"])
+                result = Member.objects.get(id=request.query_params["id"])
                 return JsonResponse({
                     "status": 200,
                     "member": {
+                        "id": result.id,
                         "firstName": result.first_name,
                         "lastName": result.last_name,
                         "part": result.part,
                         "grade": result.grade,
-                        "email": result.email,
                     }
                 }, json_dumps_params={'ensure_ascii': False})
 
@@ -77,22 +72,24 @@ class MemberView(APIView):
         elif "part" in request.query_params:
             try:
                 if "grade" in request.query_params:
-                    result = Member.objects.filter(Q(grade__startswith=request.query_params["grade"]),
-                                                   part=request.query_params["part"])
+                    result = Member.objects.filter(
+                        Q(grade__startswith=request.query_params["grade"]),
+                        part=request.query_params["part"])
                 else:
                     result = Member.objects.filter(part=request.query_params["part"])
+
                 return JsonResponse({
                     "status": 200,
                     "members": [
-                    {
-                        "firstName": i.first_name,
-                        "lastName": i.last_name,
-                        "part": i.part,
-                        "grade": i.grade,
-                        "email": i.email,
-                    }
-                    for i in result
-                ]
+                        {
+                            "id": i.id,
+                            "firstName": i.first_name,
+                            "lastName": i.last_name,
+                            "part": i.part,
+                            "grade": i.grade,
+                        }
+                        for i in result
+                    ]
                 }, json_dumps_params={'ensure_ascii': False})
 
             except Member.DoesNotExist:
@@ -104,11 +101,11 @@ class MemberView(APIView):
                 "status": 200,
                 "members": [
                     {
+                        "id": i.id,
                         "firstName": i.first_name,
                         "lastName": i.last_name,
                         "part": i.part,
                         "grade": i.grade,
-                        "email": i.email,
                     }
                     for i in result
                 ]
@@ -126,13 +123,13 @@ class MemberView(APIView):
         if is_valid != "executive":
             return HttpResponseForbidden("Forbidden")
 
-        if "emails" not in request.data:
+        if "ids" not in request.data:
             return HttpResponseBadRequest("Invalid request")
 
-        emails = request.data["emails"]
-        for i in emails:
+        ids = request.data["ids"]
+        for i in ids:
             try:
-                Member.objects.get(email=i).delete()
+                Member.objects.get(id=i).delete()
             except Member.DoesNotExist:
                 pass
 
@@ -152,12 +149,12 @@ class MemberView(APIView):
         if is_valid != "executive":
             return HttpResponseForbidden("Forbidden")
 
-        if "email" not in request.data:
+        if "id" not in request.data:
             return HttpResponseBadRequest("Invalid request")
-        email = request.data["email"]
+        id = request.data["id"]
 
         try:
-            m = Member.objects.get(email=email)
+            m = Member.objects.get(id=id)
         except Member.DoesNotExist:
             return HttpResponseBadRequest("Does Not Exist")
 
@@ -172,9 +169,6 @@ class MemberView(APIView):
 
         if "grade" not in request.data:
             m.grade = request.data["grade"]
-
-        if "newEmail" not in request.data:
-            m.email = request.data["newEmail"]
 
         m.save()
         return JsonResponse({
