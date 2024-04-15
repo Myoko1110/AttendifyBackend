@@ -154,20 +154,20 @@ class MemberView(APIView):
         id = request.data["id"]
 
         try:
-            m = Member.objects.get(id=id)
+            m = Member.objects.get(pk=id)
         except Member.DoesNotExist:
             return HttpResponseBadRequest("Does Not Exist")
 
         if "lastName" in request.data:
             m.last_name = request.data["lastName"]
 
-        if "firstName" not in request.data:
+        if "firstName" in request.data:
             m.first_name = request.data["firstName"]
 
-        if "part" not in request.data:
+        if "part" in request.data:
             m.part = request.data["part"]
 
-        if "grade" not in request.data:
+        if "grade" in request.data:
             m.grade = request.data["grade"]
 
         m.save()

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
+from django.http import HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from rest_framework.views import APIView
 
 from attendance.models import Attendance, Response
