@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'auths',
     'member',
     'attendance',
+    'schedule',
     'rest_framework',
 ]
 

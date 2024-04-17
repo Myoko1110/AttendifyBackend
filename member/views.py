@@ -1,5 +1,5 @@
 from django.db.models import Q
-from django.http import HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from rest_framework.views import APIView
 
 from auths.views import is_valid_token
@@ -37,9 +37,7 @@ class MemberView(APIView):
 
         Member.objects.create(last_name=last_name, first_name=first_name, part=part, grade=grade)
 
-        return JsonResponse({
-            "status": 200,
-        }, json_dumps_params={'ensure_ascii': False})
+        return HttpResponse(status=201)
 
     def get(self, request):
         if "token" not in request.query_params:
@@ -133,9 +131,7 @@ class MemberView(APIView):
             except Member.DoesNotExist:
                 pass
 
-        return JsonResponse({
-            "status": 200,
-        }, json_dumps_params={'ensure_ascii': False})
+        return HttpResponse(status=200)
 
     def put(self, request):
         if "token" not in request.data:
@@ -171,6 +167,4 @@ class MemberView(APIView):
             m.grade = request.data["grade"]
 
         m.save()
-        return JsonResponse({
-            "status": 200
-        }, json_dumps_params={'ensure_ascii': False})
+        return HttpResponse(status=200)

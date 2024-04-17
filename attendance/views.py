@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.http import HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from rest_framework.views import APIView
 
 from attendance.models import Attendance, Response
@@ -22,7 +22,7 @@ class AttendanceView(APIView):
 
         if "date" not in request.data:
             return HttpResponseBadRequest("Invalid request")
-        date = datetime.fromtimestamp(request.data["date"])
+        date = datetime.fromtimestamp(request.data["date"]).date()
 
         if "part" not in request.data:
             return HttpResponseBadRequest("Invalid request")
@@ -41,7 +41,7 @@ class AttendanceView(APIView):
 
         Response.objects.get_or_create(part=part, date=date, grade=grade)
 
-        return JsonResponse({"status": 200})
+        return HttpResponse(status=201)
 
 
 class ResponseView(APIView):
