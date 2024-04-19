@@ -45,7 +45,7 @@ class ScheduleView(APIView):
         if not is_valid:
             return HttpResponseForbidden("Forbidden")
 
-        result = Schedule.objects.all()
+        result = Schedule.objects.all().order_by("date")
 
         return JsonResponse({
             "schedules": [
