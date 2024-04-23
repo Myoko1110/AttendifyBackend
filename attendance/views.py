@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 
 from attendance.models import Attendance, Response
 from auths.views import is_valid_token
+from member.models import Member
 
 
 class AttendanceView(APIView):
@@ -42,6 +43,118 @@ class AttendanceView(APIView):
         Response.objects.get_or_create(part=part, date=date, grade=grade)
 
         return HttpResponse(status=201)
+
+    def get(self, request):
+        if "token" not in request.query_params:
+            return HttpResponseBadRequest("Invalid request")
+        token = request.query_params["token"]
+        if "userId" not in request.query_params:
+            return HttpResponseBadRequest("Invalid request")
+        user_id = request.query_params["userId"]
+
+        is_valid = is_valid_token(user_id, token)
+        if not is_valid:
+            return HttpResponseForbidden("Forbidden")
+
+        attendances = Attendance.objects.all().order_by("-date")
+        return JsonResponse({
+            "status": 200,
+            "attendances": [
+                {
+                    "id": i.attendance_id,
+                    "userId": i.user_id,
+                    "date": datetime.combine(i.date, datetime.min.time()).timestamp(),
+                    "type": i.type,
+                }
+                for i in attendances
+            ]
+        })
+
+    def delete(self, request):
+        if "token" not in request.data:
+            return HttpResponseBadRequest("Invalid request")
+        token = request.data["token"]
+        if "userId" not in request.data:
+            return HttpResponseBadRequest("Invalid request")
+        user_id = request.data["userId"]
+
+        is_valid = is_valid_token(user_id, token)
+        if not is_valid:
+            return HttpResponseForbidden("Forbidden")
+
+        if "id" not in request.data:
+            return HttpResponseBadRequest("Invalid request")
+        id = request.data["id"]
+
+        Attendance.objects.get(attendance_id=id).delete()
+        return HttpResponse(status=200)
+
+
+class AttendanceMemberView(APIView):
+    def get(self, request, id):
+        if "token" not in request.query_params:
+            return HttpResponseBadRequest("Invalid request")
+        token = request.query_params["token"]
+        if "userId" not in request.query_params:
+            return HttpResponseBadRequest("Invalid request")
+        user_id = request.query_params["userId"]
+
+        is_valid = is_valid_token(user_id, token)
+        if not is_valid:
+            return HttpResponseForbidden("Forbidden")
+
+        try:
+            attendances = Attendance.objects.filter(user_id=id).order_by("-date")
+        except Attendance.DoesNotExists:
+            return HttpResponseBadRequest("Does Not Exist")
+
+        return JsonResponse({
+            "status": 200,
+            "attendances": [
+                {
+                    "id": i.attendance_id,
+                    "userId": i.user_id,
+                    "date": datetime.combine(i.date, datetime.min.time()).timestamp(),
+                    "type": i.type,
+                }
+                for i in attendances
+            ]
+        })
+
+
+class AttendancePartView(APIView):
+    def get(self, request, part):
+        if "token" not in request.query_params:
+            return HttpResponseBadRequest("Invalid request")
+        token = request.query_params["token"]
+        if "userId" not in request.query_params:
+            return HttpResponseBadRequest("Invalid request")
+        user_id = request.query_params["userId"]
+
+        is_valid = is_valid_token(user_id, token)
+        if not is_valid:
+            return HttpResponseForbidden("Forbidden")
+
+        members = Member.objects.filter(part=part)
+        attendances = []
+        try:
+            for i in members:
+                attendances += Attendance.objects.filter(user_id=i.id).order_by("-date")
+        except Attendance.DoesNotExists:
+            return HttpResponseBadRequest("Does Not Exist")
+
+        return JsonResponse({
+            "status": 200,
+            "attendances": [
+                {
+                    "id": i.attendance_id,
+                    "userId": i.user_id,
+                    "date": datetime.combine(i.date, datetime.min.time()).timestamp(),
+                    "type": i.type,
+                }
+                for i in attendances
+            ]
+        })
 
 
 class ResponseView(APIView):

@@ -72,7 +72,7 @@ class MemberView(APIView):
                 if "grade" in request.query_params:
                     result = Member.objects.filter(
                         Q(grade__startswith=request.query_params["grade"]),
-                        part=request.query_params["part"])
+                        part=request.query_params["part"]).order_by("-grade", "last_name", "first_name")
                 else:
                     result = Member.objects.filter(part=request.query_params["part"])
 
@@ -93,7 +93,7 @@ class MemberView(APIView):
             except Member.DoesNotExist:
                 return HttpResponseBadRequest("Does Not Exist")
         else:
-            result = Member.objects.all()
+            result = Member.objects.all().order_by("part", "-grade", "last_name", "first_name")
 
             return JsonResponse({
                 "status": 200,
