@@ -86,7 +86,40 @@ class AttendanceView(APIView):
             return HttpResponseBadRequest("Invalid request")
         id = request.data["id"]
 
-        Attendance.objects.get(attendance_id=id).delete()
+        try:
+            Attendance.objects.get(attendance_id=id).delete()
+        except Attendance.DoesNotExist:
+            return HttpResponseBadRequest("Invalid request")
+        return HttpResponse(status=200)
+
+    def put(self, request):
+        if "token" not in request.data:
+            return HttpResponseBadRequest("Invalid request")
+        token = request.data["token"]
+        if "userId" not in request.data:
+            return HttpResponseBadRequest("Invalid request")
+        user_id = request.data["userId"]
+
+        is_valid = is_valid_token(user_id, token)
+        if not is_valid:
+            return HttpResponseForbidden("Forbidden")
+
+        if "id" not in request.data:
+            return HttpResponseBadRequest("Invalid request")
+        id = request.data["id"]
+
+        if "type" not in request.data:
+            return HttpResponseBadRequest("Invalid request")
+        type = request.data["type"]
+
+        try:
+            attendance = Attendance.objects.get(attendance_id=id)
+        except Attendance.DoesNotExist:
+            return HttpResponseBadRequest("Invalid request")
+
+        attendance.type = type
+        attendance.save()
+
         return HttpResponse(status=200)
 
 
