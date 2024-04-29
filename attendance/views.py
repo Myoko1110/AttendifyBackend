@@ -190,6 +190,41 @@ class AttendancePartView(APIView):
         })
 
 
+class AttendanceGradeView(APIView):
+    def get(self, request, grade):
+        if "token" not in request.query_params:
+            return HttpResponseBadRequest("Invalid request")
+        token = request.query_params["token"]
+        if "userId" not in request.query_params:
+            return HttpResponseBadRequest("Invalid request")
+        user_id = request.query_params["userId"]
+
+        is_valid = is_valid_token(user_id, token)
+        if not is_valid:
+            return HttpResponseForbidden("Forbidden")
+
+        members = Member.objects.filter(grade=grade)
+        attendances = []
+        try:
+            for i in members:
+                attendances += Attendance.objects.filter(user_id=i.id).order_by("-date")
+        except Attendance.DoesNotExists:
+            return HttpResponseBadRequest("Does Not Exist")
+
+        return JsonResponse({
+            "status": 200,
+            "attendances": [
+                {
+                    "id": i.attendance_id,
+                    "userId": i.user_id,
+                    "date": datetime.combine(i.date, datetime.min.time()).timestamp(),
+                    "type": i.type,
+                }
+                for i in attendances
+            ]
+        })
+
+
 class ResponseView(APIView):
     def get(self, request):
         if "token" not in request.query_params:

@@ -7,4 +7,5 @@ urlpatterns = [
     path('response/', views.ResponseView.as_view(), name='response'),
     path('member/<int:id>/', views.AttendanceMemberView.as_view()),
     path('part/<str:part>/', views.AttendancePartView.as_view()),
+    path('grade/<str:grade>/', views.AttendanceGradeView.as_view()),
 ]
