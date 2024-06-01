@@ -27,6 +27,7 @@ class LoginView(APIView):
 
         token_res = requests.post("https://accounts.google.com/o/oauth2/token", data=params)
         if 400 < token_res.status_code < 599:
+            print(token_res.json())
             return HttpResponseServerError("Internal Server Error")
 
         token_res_data = token_res.json()

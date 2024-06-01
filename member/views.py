@@ -48,7 +48,7 @@ class MemberView(APIView):
         user_id = request.query_params["userId"]
 
         is_valid = is_valid_token(user_id, token)
-        if is_valid != "executive":
+        if is_valid != "executive" or is_valid != "normal":
             return HttpResponseForbidden("Forbidden")
 
         if "id" in request.query_params:
